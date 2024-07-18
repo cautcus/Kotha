@@ -1,24 +1,38 @@
-import logo from './logo.svg';
-import './App.css';
+// src/App.js
+import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { auth } from "./firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import Chat from "./chat";
+import Login from "./signin"; // Update with your authentication components
+import SignUp from "./signup";
 
 function App() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div className="App">
+        {user ? (
+          <Chat user={user} />
+        ) : (
+          <Routes>
+            {/* Routes for different authentication methods */}
+            <Route path="/login" element={<Login setUser={setUser} />} />
+            {/* Add routes for other authentication methods */}
+            <Route path="/" element={<Login setUser={setUser} />} />
+            <Route exact path="/signup" element={<SignUp/>} />
+          </Routes>
+        )}
+      </div>
+    </Router>
   );
 }
 
